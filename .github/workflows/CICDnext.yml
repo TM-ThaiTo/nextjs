@@ -1,0 +1,57 @@
+name: Node.js CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main  # Hoặc tên nhánh của bạn
+  pull_request:
+    branches:
+      - main  # Hoặc tên nhánh của bạn
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'  # Hoặc phiên bản Node.js mà bạn muốn sử dụng
+
+      - name: build docker image
+        run: |
+          docker build -t tmthaitodocker/fe-nextjs .
+      
+      - name: login docker
+        run: echo "${{ secrets.DOCKER_ACCESS_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: push image to docker hub
+        run: docker push tmthaitodocker/fe-nextjs:latest
+            
+      - name: Deploy to VPS (Next.js)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            # Pull the latest Next.js image from Docker Hub
+            docker pull tmthaitodocker/fe-nextjs:latest
+
+            # Stop and remove old Next.js container (if it exists)
+            docker rm -f fe-nextjs || echo "No container named fe-nextjs found."
+
+            # Remove old unused images
+            docker images -f "dangling=true" -q | xargs --no-run-if-empty docker rmi
+
+            # Run the new Next.js container
+            docker run -d \
+            -p 3000:3000 \
+            --env-file /root/devhuynh/.env \
+            --name fe-nextjs \
+            tmthaitodocker/fe-nextjs:latest
+        
+
