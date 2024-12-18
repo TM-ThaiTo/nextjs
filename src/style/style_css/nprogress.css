@@ -1,0 +1,37 @@
+/* Tắt spinner */
+#nprogress .spinner {
+  display: none !important;
+}
+
+/* Thanh tải với hiệu ứng chuyển đổi màu */
+#nprogress .bar {
+  position: fixed !important;
+  z-index: 1031 !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 4px !important;
+  background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet) !important;
+  background-size: 400% 400% !important;
+  animation: gradientShift 3s ease infinite !important;
+}
+
+/* Hiệu ứng ánh sáng ở đầu thanh */
+#nprogress .peg {
+  box-shadow: 0 0 10px #29d, 0 0 5px #29d !important;
+}
+
+/* Hiệu ứng chuyển đổi màu */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
